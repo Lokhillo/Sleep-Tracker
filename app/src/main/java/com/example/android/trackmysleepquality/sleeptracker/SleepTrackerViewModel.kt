@@ -61,9 +61,7 @@ class SleepTrackerViewModel(
     fun onStartTracking() {
         viewModelScope.launch {
             val newNight = SleepNight()
-
             insert(newNight)
-
             tonight.value = getTonightFromDatabase()
         }
     }
