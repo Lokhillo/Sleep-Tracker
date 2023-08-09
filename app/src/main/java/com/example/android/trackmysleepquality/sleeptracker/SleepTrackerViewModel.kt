@@ -11,8 +11,7 @@ import kotlinx.coroutines.launch
  * ViewModel for SleepTrackerFragment.
  */
 class SleepTrackerViewModel(
-    val database: SleepDatabaseDao,
-    application: Application
+    val database: SleepDatabaseDao, application: Application
 ) : AndroidViewModel(application) {
 
     private var tonight = MutableLiveData<SleepNight?>()
@@ -21,6 +20,21 @@ class SleepTrackerViewModel(
     private val _navigateToSleepQuality = MutableLiveData<SleepNight>()
     val navigateToSleepQuality: LiveData<SleepNight>
         get() = _navigateToSleepQuality
+
+    private val _showSnackBarEvent = MutableLiveData<Boolean>()
+    val showSnackBarEvent: LiveData<Boolean>
+        get() = _showSnackBarEvent
+    val startButtonVisible = Transformations.map(tonight) {
+        null == it
+    }
+
+    val stopButtonVisible = Transformations.map(tonight) {
+        null != it
+    }
+
+    val clearButtonVisible = Transformations.map(nights) {
+        it?.isNotEmpty()
+    }
 
     /**
      * Formatting night data to display.
@@ -83,10 +97,15 @@ class SleepTrackerViewModel(
             clear()
             tonight.value = null
         }
+        _showSnackBarEvent.value = true
     }
 
-    fun navigateToSleepQualityComplete(){
+    fun navigateToSleepQualityComplete() {
         _navigateToSleepQuality.value = null
+    }
+
+    fun showSnackBarEventComplete() {
+        _showSnackBarEvent.value = false
     }
 }
 
