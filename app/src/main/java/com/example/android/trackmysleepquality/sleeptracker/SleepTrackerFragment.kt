@@ -55,7 +55,14 @@ class SleepTrackerFragment : Fragment() {
                 viewModel.showSnackBarEventComplete()
             }
         })
+        val adapter = SleepNightAdapter()
+        binding.sleepList.adapter = adapter
 
+        viewModel.nights.observe(viewLifecycleOwner, Observer {
+            it?.let {
+                adapter.data = it
+            }
+        })
         return binding.root
     }
 }
