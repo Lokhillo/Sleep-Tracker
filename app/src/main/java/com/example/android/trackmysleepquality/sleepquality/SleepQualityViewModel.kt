@@ -1,5 +1,6 @@
 package com.example.android.trackmysleepquality.sleepquality
 
+import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -20,8 +21,8 @@ class SleepQualityViewModel(
             val tonight = database.get(sleepNightKey) ?: return@launch
             tonight.sleepQuality = quality
             database.update(tonight)
+            _navigateToSleepTracker.value = true
         }
-        _navigateToSleepTracker.value = true
     }
 
     fun navigateToSleepTrackerComplete() {
