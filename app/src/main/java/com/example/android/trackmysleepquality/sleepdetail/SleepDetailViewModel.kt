@@ -22,13 +22,13 @@ class SleepDetailViewModel(
         night.addSource(database.getNightWithId(sleepNightKey), night::setValue)
     }
 
-    private val _navigateToSleepTracker = MutableLiveData<Boolean?>()
+    private val _navigateToSleepTracker = MutableLiveData<Boolean>()
 
-    val navigateToSleepTracker: LiveData<Boolean?>
+    val navigateToSleepTracker: LiveData<Boolean>
         get() = _navigateToSleepTracker
 
     fun doneNavigating() {
-        _navigateToSleepTracker.value = null
+        _navigateToSleepTracker.value = false
     }
 
     fun onClose() {

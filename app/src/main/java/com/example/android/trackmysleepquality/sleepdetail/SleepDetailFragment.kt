@@ -18,7 +18,7 @@ class SleepDetailFragment : Fragment() {
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
+    ): View {
 
         val binding: FragmentSleepDetailBinding = DataBindingUtil.inflate(
             inflater, R.layout.fragment_sleep_detail, container, false
@@ -31,9 +31,7 @@ class SleepDetailFragment : Fragment() {
         val viewModelFactory = SleepDetailViewModelFactory(arguments.sleepNightKey, dataSource)
 
         val sleepDetailViewModel =
-            ViewModelProvider(
-                this, viewModelFactory
-            ).get(SleepDetailViewModel::class.java)
+            ViewModelProvider(this, viewModelFactory).get(SleepDetailViewModel::class.java)
 
         binding.sleepDetailViewModel = sleepDetailViewModel
 
