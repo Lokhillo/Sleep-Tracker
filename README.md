@@ -1,5 +1,5 @@
 # Sleep Tracker #
-This is a sleep quality tracker app, that stores the sleep data over time is a database. It stores start time, end time and quality of sleep. The app architecture is based on MVVM architecture and uses ROOM database.
+This is a sleep quality tracker app, that stores the sleep data over time in a database. It stores start time, end time and quality of sleep. The app architecture is based on MVVM architecture and uses ROOM database.
 
 This app demonstrates the following views and techniques:
 * Room database
@@ -31,7 +31,7 @@ For example, in this app Sleep data of one night acts as an entity.
 Query is a request for data from a database table(s), or a request to perform actions on the data.
 For example, in this app we can add or delete sleep data in our database. 
 
-Using Room we define each entity as a data class and all queries as an interface. We then use annotations to add metadata to both. Room uses the annotated classes to create tables and perform queries on the database.
+Using Room, we define each entity as a data class and all queries as interfaces. We then use annotations to add metadata to both. Room uses the annotated classes to create tables and perform queries on the database.
 
 **DAO** - Data Access Object or DAO is an annotated class, that contains interfaces to perform queries on the database. We use Kotlin functions for that map to SQL queries.
 
@@ -54,11 +54,11 @@ Using Room we define each entity as a data class and all queries as an interface
 
 9. `@Database` - It is used to annotate the databse class that extends `RoomDatabase`. It creates a database instance.
 
-## ROOM and LiveData ##
+## Room and LiveData ##
 Room automatically integrates with LiveData to help us observe changes in the database. To use this feature we set the return type of our method signature in DAO class as LiveData.
 
 ## Room Database ##
-We use data class as Entity and Interface class as Dao. To create the database we create an abstract database holder class annotated with `@Database` annotation. This class extends Room Database class and it follows Singleton Design pattern, since we need only one instance of the same database for the whole app. We need to add all entities/tables as a parameter to `@Database` annotation inside this class. We have to also define all DAOs associated with the entities here, so that the database can interact with it. Various components of the database class are discussed below : 
+We use data class as Entity and Interface class as Dao. To create the database we create an abstract database holder class annotated with `@Database` annotation. This class extends Room Database class and it follows Singleton Design Pattern, since we need only one instance of the same database for the whole app. We need to add all entities/tables as a parameter to `@Database` annotation inside this class. We have to also define all DAOs associated with the entities here, so that the database can interact with it. Various components of the database class are discussed below : 
 
 1. We use a companion object in our database class to access the database. It allows clients to access the methods for creating or getting the database without instantiating the class.
 
@@ -66,7 +66,7 @@ We use data class as Entity and Interface class as Dao. To create the database w
 
 3. We create the database instance inside a synchronized block. This helps in preventing creation of multiple instances of the database, when more than one thread tries to create the database in first place. With a synchronized block, only one thread can enter the block at a time, this makes sure that database gets initialized only once.
 
-4. We provide migration strategy when we create the database. Migration Strategy defines, how should the existing tables and data is converted, when we change the schema like changing the number or type of columns. It defines how we take all rows from old schema and convert them to rows in new schema. It helps in preventing the existing data in the app, when a user updates the app to a version that has a newer schema. 
+4. We provide migration strategy when we create the database. Migration Strategy defines, how should the existing tables and data is converted, when we change the schema like changing the number or type of columns. It defines how we take all rows from old schema and convert them to rows in new schema. It helps in preserving the existing data in the app, when a user updates the app to a version that has a newer schema. 
 
 Below is sample code of a database class
 
@@ -102,7 +102,7 @@ abstract class SleepDatabase : RoomDatabase() {
 
 ## Multi-threading and Coroutines ##
 
-An application has a main thread that runs in foreground. It can dispatch other threads that may run into background. In Android, the main thread handlers all updates to the UI. It is responsible for click handlers and lifecycle callbacks. Hence, it is also called UI thread.
+An application has a main thread that runs in foreground. It can dispatch other threads that may run into background. In Android, the main thread handles all updates to the UI. It is responsible for click handlers and lifecycle callbacks. Hence, it is also called UI thread.
 
 The UI thread is the default, therefore all code unless specified otherwise, runs on the UI thread. However that UI thread has to run smoothly for a great user experience. So, we should never block the UI thread with long running operations. Database operations can take a long time, therefore such operations should run on a separate thread. If we block the main thread for too long, the app may even crash and present an **Application Not Responding** dialog.
 
@@ -112,7 +112,7 @@ One option to do work away from main thread is to use callbacks. We can start lo
 
 2. Callbacks does not support direct exception handling. They require additional parameter like result, that determines whether the operation was successful or failure.
 
-Coroutines are efficient way to handle long-running tasks. It helps to convert callback-based code to sequential code and support exception handling. Coroutines have following features:
+Coroutines are efficient way to handle long-running tasks. It helps to convert callback-based code to sequential code and support direct exception handling. Coroutines have following features:
 
 1. **Asynchronous** - The coroutine runs independently from the main execution of program.
 
@@ -128,12 +128,12 @@ Coroutines have following four components:
 
 3. **Scope** - It combines information, including job and dispatcher and defines the context in which coroutine runs.
 
-4. **Supspended Functions** - The keyword suspend is Kotlin's way of marking a function, or function type, available to coroutines. When a coroutine calls a function marked suspend, instead of blocking until that function returns like a normal function call, it suspends execution until the result is ready then it resumes where it left off with the result. While it's suspended waiting for a result, it unblocks the thread that it's running on so other functions or coroutines can run.
+4. **Supspended Functions** - The suspend keyword marks a function to be available to coroutines. When a coroutine calls a function marked suspend, instead of blocking until that function returns like a normal function call, it suspends execution until the result is ready then it resumes where it left off with the result. While it's suspended waiting for a result, it unblocks the thread that it's running on so other functions or coroutines can run.
 
-### Coroutines with ROOM ###
+### Coroutines with Room ###
 We latest library, we can directly call suspended DAO methods from our viewModel scope. With the use of suspended functions, our coroutines become main-safe, i.e. we can directly cann them from our main thread.
 ```
-// use suspend for Dao methods
+// use suspend keyword for Dao methods
 @Insert
 suspend fun insert(night: SleepNight)
 ```
@@ -161,10 +161,11 @@ It is used to display data in form of list. It uses adpater pattern and does pro
 
 3. Customizable : It can display different views in the same list. It can support list or grid layout and horizontal or vertical scrolling.
 
-4. Recycling : When the items are scrolled off the visible screen. It uses them to populate with new data. And, when an item changes, instead of re-drawing complete list, it just updates the single item.
+4. Recycling : When the items are scrolled off the visible screen. It uses them to populate with new data. And, when an item changes, instead of re-drawing complete list, it just updates the changed items.
 
 ## Adapter ##
-The adapter takes the data (from list, room database,etc) and converts so that it can be handled by RecyclerView. It is based on adapter pattern, which converts one interface to work with another. An adapter for RecyclerView should have following methods:
+The adapter takes the data (from list, room database, etc) and converts them, so that it can be handled by RecyclerView. It is based on Adapter Design Pattern, which converts one interface to work with another. An adapter for RecyclerView should have following methods:
+
 1. `getItemCount()` - The recycler view should know how many items are available, to decide how far to scroll, or deciding the size of scrollbar.
 
 2. `onBindViewHolder()` - It tells RecyclerView how to add the data to the views.
