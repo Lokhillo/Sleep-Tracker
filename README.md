@@ -17,8 +17,9 @@ It also uses:
 <img alt="Sleep Tracker Preview 1" src="https://github.com/pawanharariya/Sleep-Tracker/assets/43620548/ecabf3c2-dd8f-47f2-922e-beeb0bc42465" width="220" >
 <img alt="Sleep Tracker Preview 2" src="https://github.com/pawanharariya/Sleep-Tracker/assets/43620548/dd82c022-846d-4610-be9a-7f4faa64f08f" width="220" >
 <img alt="Sleep Tracker Preview 3" src="https://github.com/pawanharariya/Sleep-Tracker/assets/43620548/059020c2-df13-479b-8020-d1447b0ab119" width="220" >
+
 ### App Architecture ###
-<img alt="Sleep Tracker Architecture" src="https://github.com/pawanharariya/Sleep-Tracker/assets/43620548/e275bcea-52a3-4ff9-8d16-16d054a24576" width="220" >
+<img alt="Sleep Tracker Architecture" src="https://github.com/pawanharariya/Sleep-Tracker/assets/43620548/e275bcea-52a3-4ff9-8d16-16d054a24576" width="400" >
 
 ## ROOM ##
 Room is a database library that is part of Android Jetpack. It is database layer built on top of SQLite database. Below are some terms related to databases and Room.
