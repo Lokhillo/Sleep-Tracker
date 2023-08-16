@@ -13,6 +13,13 @@ It also uses:
 * Using Backing Properties to protect MutableLiveData
 * Observable state LiveData variables to trigger navigation
 
+### App Preview ###
+<img alt="Sleep Tracker Preview 1" src="https://github.com/pawanharariya/Sleep-Tracker/assets/43620548/ecabf3c2-dd8f-47f2-922e-beeb0bc42465" width="220" >
+<img alt="Sleep Tracker Preview 2" src="https://github.com/pawanharariya/Sleep-Tracker/assets/43620548/dd82c022-846d-4610-be9a-7f4faa64f08f" width="220" >
+<img alt="Sleep Tracker Preview 3" src="https://github.com/pawanharariya/Sleep-Tracker/assets/43620548/059020c2-df13-479b-8020-d1447b0ab119" width="220" >
+### App Architecture ###
+<img alt="Sleep Tracker Architecture" src="https://github.com/pawanharariya/Sleep-Tracker/assets/43620548/e275bcea-52a3-4ff9-8d16-16d054a24576" width="220" >
+
 ## ROOM ##
 Room is a database library that is part of Android Jetpack. It is database layer built on top of SQLite database. Below are some terms related to databases and Room.
 
@@ -94,11 +101,9 @@ abstract class SleepDatabase : RoomDatabase() {
 
 ## Multi-threading and Coroutines ##
 
-Database operations can take a long time, therefore such operations should run on a separate thread.
-
 An application has a main thread that runs in foreground. It can dispatch other threads that may run into background. In Android, the main thread handlers all updates to the UI. It is responsible for click handlers and lifecycle callbacks. Hence, it is also called UI thread.
 
-The UI thread is the default, therefore all code unless specified otherwise, runs on the UI thread. However that UI thread has to run smoothly for a great user experience. So, we shoould never block the UI thread with long running operations.
+The UI thread is the default, therefore all code unless specified otherwise, runs on the UI thread. However that UI thread has to run smoothly for a great user experience. So, we should never block the UI thread with long running operations. Database operations can take a long time, therefore such operations should run on a separate thread. If we block the main thread for too long, the app may even crash and present an **Application Not Responding** dialog.
 
 One option to do work away from main thread is to use callbacks. We can start long running tasks in background thread. When the task completes the callback which was supplied as an argument is called to inform the result on the main thread. Callbacks has few drawbacks :
 
@@ -114,7 +119,7 @@ Coroutines are efficient way to handle long-running tasks. It helps to convert c
 
 3. **Sequential Code** - Callbacks are not needed, which make code sequential.
 
-Coroutines have following three components:
+Coroutines have following four components:
 
 1. **Job** - A background job is something that can be cancelled. We use it cancel the coroutine. So, when the fragment/viewModel that started the coroutine is destroyed, all coroutines are cancelled.
 
@@ -124,6 +129,93 @@ Coroutines have following three components:
 
 4. **Supspended Functions** - The keyword suspend is Kotlin's way of marking a function, or function type, available to coroutines. When a coroutine calls a function marked suspend, instead of blocking until that function returns like a normal function call, it suspends execution until the result is ready then it resumes where it left off with the result. While it's suspended waiting for a result, it unblocks the thread that it's running on so other functions or coroutines can run.
 
-### Quick Tips ###
-1. Make sure to cancel all coroutines started by the viewModel in `onCleared()`, so that we don't end up with coroutines that have nowhere to return, when the viewModel is destroyed.
+### Coroutines with ROOM ###
+We latest library, we can directly call suspended DAO methods from our viewModel scope. With the use of suspended functions, our coroutines become main-safe, i.e. we can directly cann them from our main thread.
+```
+// use suspend for Dao methods
+@Insert
+suspend fun insert(night: SleepNight)
+```
+```
+fun onStartTracking() {
+        // use view model scope to launch the coroutine from main thread
+        viewModelScope.launch {
+            val newNight = SleepNight()
+            insert(newNight)
+            tonight.value = getTonightFromDatabase()
+        }
+}
+private suspend fun insert(night: SleepNight) {
+        database.insert(night)
+}
+```
 
+
+## RecyclerView ##
+It is used to display data in form of list. It uses adpater pattern and does processing only for items visible on the screen, until user scrolls. When the user scrolls, it reuses existing scrolled off views, at new positions with new data. Following are features of RecyclerView.
+
+1. Efficient : It is designed to be efficient for displaying extremely large lists.
+
+2. Display Complex Views : It can handle complex collection of views easily as a item of list.
+
+3. Customizable : It can display different views in the same list. It can support list or grid layout and horizontal or vertical scrolling.
+
+4. Recycling : When the items are scrolled off the visible screen. It uses them to populate with new data. And, when an item changes, instead of re-drawing complete list, it just updates the single item.
+
+## Adapter ##
+The adapter takes the data (from list, room database,etc) and converts so that it can be handled by RecyclerView. It is based on adapter pattern, which converts one interface to work with another. An adapter for RecyclerView should have following methods:
+1. `getItemCount()` - The recycler view should know how many items are available, to decide how far to scroll, or deciding the size of scrollbar.
+
+2. `onBindViewHolder()` - It tells RecyclerView how to add the data to the views.
+
+3. `onCreateViewHolder()` - It tells RecyclerView how to create a new viewHolder, when required.
+
+RecyclerView doesn't directly interact with views but ViewHolders, provided by the adapter. ViewHolders just hold the views of the item. RecyclerView reuses the ViewHolders that are scrolled off the screen create items with new data. It is used by recyclerView to draw, animate and scroll the list.
+
+### DiffUtil ###
+`notifyDataSetChanged()` tells the RecyclerView that entire list needs to be re-drawn. Hence, RecyclerView re-draws everything, which can be expensive, in-cases when only a single list item is changed.
+
+DiffUtil is helper class for RecyclerView adapters that calculates changes in the list and minimizes modifications. This helps RecyclerView to re-draw only the items inserted, deleted or updated, instead of entire list. It also provides default animations.
+
+### Helpful Tips ###
+1. Since we know, recyclerView reuses the viewHolders, we must reset the state of the views. For example, suppose we set the text color based on some condition, when this viewHolder is reused it will have the same text color, so we must reset it, so that next time the viewHolder's state is correct, if item at that position don't match the condition.
+    ```
+    if (someCondition) {
+           holder.textView.setTextColor(Color.RED) 
+    } else {
+           holder.textView.setTextColor(Color.BLACK) 
+    }
+    ```
+
+2. Instead of using `notifyDataSetChanged()` when single list item is changed, we can use other APIs like `notifyOnItemInserted()` or use the `DiffUtil` helper class.
+
+3. Instead of using `RecylerView.Adapter`, we can use `ListAdapter` for cases when our RecyclerView is backed by a list. It keeps track of list, notifies adapter when list is updated, so works well with DiffUtil.
+
+4. We can use DataBinding for items in our RecyclerView using BindingAdapters and extension functions.
+    ```
+    @BindingAdapter("sleepDuration")
+    fun TextView.setSleepDuration(item: SleepNight?) {
+        item?.let {
+            text = item.sleepDuration
+        }
+    }
+    ```
+    ```
+    \\ and use it as an attribute in xml
+    <TextView
+        android:id="@+id/sleep_duration"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:sleepDurationFormatted="@{sleep}" />
+    ```
+4. In case, we want different layouts for items in one RecylcerView, we create different ViewHolders, and to tell RecyclerView which ViewHolder for which position, we override the `getItemViewType(position: Int)` method.
+
+5. To use grids instead of a linear list. We can use GridLayoutManager instead of LinearLayoutManager. Also, we can control the Span using span size lookup configuration object.
+    ```
+    manager.spanSizeLookup = object : GridLayoutManager.SpanSizeLookup() {
+            override fun getSpanSize(position: Int) =  when (position) {
+                0 -> 3     // first item spans three columns
+                else -> 1  // all other items span one column
+            }
+    }
+    ```
